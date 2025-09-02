@@ -8,6 +8,7 @@ env:
   MONGODB_DB_NAME: gha-db #defining env variable on workflow level, will be available to all jobs
 jobs:
   test:
+    # environment to be set in github settings and below variables
     environment: testing
     env:
       # Defining env variable on job level, since below will be different for testing env and prod env
