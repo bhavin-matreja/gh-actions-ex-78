@@ -1,0 +1,44 @@
+name: Deployment
+on:
+  push:
+    branches:
+      - main
+      - dev
+env:
+  MONGODB_DB_NAME: gha-db #defining env variable on workflow level, will be available to all jobs
+jobs:
+  test:
+    env:
+      # Defining env variable on job level, since below will be different for testing env and prod env
+      MONGODB_CLUSTER_ADDRESS: cluster0.mesdcep.mongodb.net
+      MONGODB_USERNAME: bharat
+      MONGODB_PASSWORD: 85jylAHTXgW8MfU7
+      PORT: 8080
+    environment: testing
+    runs-on: ubuntu-latest
+    steps:
+      # can also define env variable on step level
+      - name: Get Code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-deps-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Run server
+        run: npm start & npx wait-on http://127.0.0.1:$PORT
+      - name: Run tests
+        run: npm test
+      - name: Output information
+        run: |
+          echo "MONGODB_USERNAME: ${{ env.MONGODB_USERNAME }} "
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output information
+        run: |
+          echo "MONGODB_USERNAME: ${{ env.MONGODB_USERNAME }} "        
+          echo "MONGODB_DB_NAME: ${{ env.MONGODB_DB_NAME }} "
